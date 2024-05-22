@@ -17,7 +17,7 @@ cursor.execute("""INSERT INTO student VALUES ('Robert', 'Machine Learning', 'B',
 
 print("The inserted records are: ")
 
-data = cursor.execute("""SELECT * FROM STUDENT""")
+data = cursor.execute("""SELECT * FROM student""")
 
 for row in data:
     print(row)
