@@ -1,114 +1,147 @@
 from dotenv import load_dotenv
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_community.utilities import SQLDatabase
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 import streamlit as st
 import os
-import sqlite3
-import google.generativeai as genai
-import re
-import speech_recognition as sr
+from urllib.parse import quote_plus
 
-# Load environment variables
+
+def initDatabase(user: str, password: str, host: str, port: str, database: str) -> SQLDatabase:
+    encoded_password = quote_plus(password)
+    db_uri = f"mysql+mysqlconnector://{user}:{encoded_password}@{host}:{port}/{database}"
+    return SQLDatabase.from_uri(db_uri)
+
+
+def getSqlChain(db):
+    template = """
+    You are a data analyst at a company. You are interacting with a user who is asking you questions about the company's database.
+    Based on the table schema below, write a SQL query that would answer the user's question. Take the conversation history into account.
+
+    <SCHEMA>{schema}</SCHEMA>
+
+    Conversation History: {chat_history}
+
+    Write only the SQL query and nothing else. Do not wrap the SQL query in any other text, not even backticks.
+
+    For example:
+    Question: which 3 artists have the most tracks?
+    SQL Query: SELECT ArtistId, COUNT(*) as track_count FROM Track GROUP BY ArtistId ORDER BY track_count DESC LIMIT 3;
+    Question: Name 10 artists
+    SQL Query: SELECT Name FROM Artist LIMIT 10;
+
+    Your turn:
+
+    Question: {question}
+    SQL Query:
+    """
+
+    prompt = ChatPromptTemplate.from_template(template)
+
+    llm = ChatGoogleGenerativeAI(model="gemini-pro",
+                                 google_api_key=os.getenv("GOOGLE_API_KEY"),
+                                 temperature=0.7, top_p=0.85)
+
+    def getSchema(_):
+        return db.get_table_info()
+
+    return (
+            RunnablePassthrough.assign(schema=getSchema)
+            | prompt
+            | llm
+            | StrOutputParser()
+    )
+
+
+def getResponse(userQuery: str, db: SQLDatabase, chatHistory: list):
+    sql_chain = getSqlChain(db)
+
+    template = """
+    You are a data analyst at a company. You are interacting with a user who is asking you questions about the company's database.
+    Based on the table schema below, question, sql query, and sql response, write a natural language response.
+    <SCHEMA>{schema}</SCHEMA>
+
+    Conversation History: {chat_history}
+    SQL Query: <SQL>{query}</SQL>
+    User question: {question}
+    SQL Response: {response}"""
+
+    prompt = ChatPromptTemplate.from_template(template)
+
+    llm = ChatGoogleGenerativeAI(model="gemini-pro",
+                                 google_api_key=os.getenv("GOOGLE_API_KEY"),
+                                 temperature=0.7, top_p=0.85)
+
+    chain = (
+            RunnablePassthrough.assign(query=sql_chain).assign(
+                schema=lambda _: db.get_table_info(),
+                response=lambda vars: db.run(vars["query"]),
+            )
+            | prompt
+            | llm
+            | StrOutputParser()
+    )
+
+    return chain.invoke({
+        "question": userQuery,
+        "chat_history": chatHistory,
+    })
+
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        AIMessage(content="Hello! I'm a SQL assistant. Ask me anything about your database."),
+    ]
+
 load_dotenv()
 
-# Configure the Generative AI API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+st.set_page_config(page_title="Ask Your Database", page_icon=":robot_face:")
 
+st.title("Ask Your Database")
 
-# Function to get response from Generative AI model
-def getGeminiResponse(question, prompt):
-    model = genai.GenerativeModel('gemini-pro')
-    response = model.generate_content([prompt.format(question=question)])
-    return response.text.strip()
+with st.sidebar:
+    st.subheader("Settings")
+    st.write("This is a simple chat application using MySQL. Connect to the database and start chatting.")
 
+    st.text_input("Host", value="localhost", key="Host")
+    st.text_input("Port", value="3306", key="Port")
+    st.text_input("User", value="root", key="User")
+    st.text_input("Password", type="password", value="", key="Password")
+    st.text_input("Database", value="", key="Database")
 
-# Function to execute SQL query
-def readSQLQuery(sql, db):
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    try:
-        cur.execute(sql)
-        rows = cur.fetchall()
-        conn.commit()
-    except sqlite3.Error as e:
-        rows = None
-        st.error(f"An error occurred: {e}")
-    conn.close()
-    return rows
+    if st.button("Connect"):
+        with st.spinner("Connecting to database..."):
+            db = initDatabase(
+                st.session_state["User"],
+                st.session_state["Password"],
+                st.session_state["Host"],
+                st.session_state["Port"],
+                st.session_state["Database"]
+            )
+            st.session_state.db = db
+            st.success("Connected to database!")
 
+for message in st.session_state.chat_history:
+    if isinstance(message, AIMessage):
+        with st.chat_message("AI"):
+            st.markdown(message.content)
+    elif isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.markdown(message.content)
 
-# Prompt for generic SQL query handling
-prompt = """
-You are an expert in converting English questions to SQL queries!
-The SQL database has the name STUDENT and has the following columns - NAME, CLASS, SECTION, MARKS.
+user_query = st.chat_input("Type a message...")
+if user_query is not None and user_query.strip() != "":
+    st.session_state.chat_history.append(HumanMessage(content=user_query))
 
-Convert the following question to a SQL query: "{question}"
+    with st.chat_message("Human"):
+        st.markdown(user_query)
 
-The SQL code should not have ``` in the beginning or end, and SQL word in the output.
-"""
+    with st.chat_message("AI"):
+        response = getResponse(user_query, st.session_state.db, st.session_state.chat_history)
+        st.markdown(response)
 
-# Streamlit app configuration
-st.set_page_config(page_title="Text to SQL Translator")
-st.header("App To Retrieve SQL Data")
-
-# Initialize the recognizer
-recognizer = sr.Recognizer()
-
-
-# Function to capture voice input and convert it to text
-def getVoiceInput():
-    with sr.Microphone() as source:
-        st.write("Listening for your question...")
-        audio = recognizer.listen(source)
-        try:
-            st.write("Recognizing...")
-            text = recognizer.recognize_google(audio)
-            st.write(f"You said: {text}")
-            return text
-        except sr.UnknownValueError:
-            st.write("Sorry, I could not understand the audio.")
-        except sr.RequestError:
-            st.write("Sorry, there was an error with the speech recognition service.")
-    return ""
-
-
-# Button to capture voice input
-voice_input = st.button("Capture Voice Input")
-
-# Initialize the question variable
-question = ""
-
-# If voice input button is clicked, capture the voice input
-if voice_input:
-    question = getVoiceInput()
-
-# Input field for user question, using the voice input if available
-question = st.text_input("Input: ", value=question, key="input")
-
-# Button to submit the question
-submit = st.button("Ask the question")
-
-# If submit is clicked
-if submit:
-    # Get the SQL query response from Generative AI model
-    response = getGeminiResponse(question, prompt)
-
-    # Extract the SQL command using regex
-    sql_match = re.search(r"SELECT.*?;", response, re.DOTALL | re.IGNORECASE)
-    if sql_match:
-        sql_query = sql_match.group(0)
-        st.subheader("Generated SQL Query")
-        st.code(sql_query)
-
-        # Execute the SQL query
-        query_result = readSQLQuery(sql_query, "student.db")
-
-        # Display the response
-        st.subheader("The Response is")
-        if query_result:
-            # Convert the query result to a flat string and use regex to remove unwanted characters
-            result_str = ' '.join(map(str, query_result))
-            clean_result = re.sub(r'[^\w\s]', '', result_str)  # Remove brackets and commas
-            st.write(clean_result)
-        else:
-            st.write("No results found")
-    else:
-        st.error("Failed to generate a valid SQL query.")
+    st.session_state.chat_history.append(AIMessage(content=response))
