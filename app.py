@@ -12,12 +12,34 @@ from urllib.parse import quote_plus
 
 
 def initDatabase(user: str, password: str, host: str, port: str, database: str) -> SQLDatabase:
+    """
+    Initialize the connection to the MySQL database.
+
+    Args:
+        user (str): The database user.
+        password (str): The database user's password.
+        host (str): The database host.
+        port (str): The database port.
+        database (str): The name of the database.
+
+    Returns:
+        SQLDatabase: The SQLDatabase object representing the connection.
+    """
     encoded_password = quote_plus(password)
     db_uri = f"mysql+mysqlconnector://{user}:{encoded_password}@{host}:{port}/{database}"
     return SQLDatabase.from_uri(db_uri)
 
 
 def getSqlChain(db):
+    """
+    Create a chain of operations to generate an SQL query from a user's natural language question.
+
+    Args:
+        db (SQLDatabase): The SQLDatabase object representing the connection.
+
+    Returns:
+        RunnablePassthrough: A chain of operations that generate the SQL query.
+    """
     template = """
     You are a data analyst at a company. You are interacting with a user who is asking you questions about the company's database.
     Based on the table schema below, write a SQL query that would answer the user's question. Take the conversation history into account.
@@ -47,6 +69,15 @@ def getSqlChain(db):
                                  temperature=0.7, top_p=0.85)
 
     def getSchema(_):
+        """
+        Retrieve the schema information from the database.
+
+        Args:
+            _ : Placeholder for the argument.
+
+        Returns:
+            str: The schema information.
+        """
         return db.get_table_info()
 
     return (
@@ -58,6 +89,17 @@ def getSqlChain(db):
 
 
 def getResponse(userQuery: str, db: SQLDatabase, chatHistory: list):
+    """
+    Generate a natural language response to the user's question based on the database content.
+
+    Args:
+        userQuery (str): The user's natural language question.
+        db (SQLDatabase): The SQLDatabase object representing the connection.
+        chatHistory (list): The history of the chat interaction.
+
+    Returns:
+        str: The natural language response to the user's question.
+    """
     sql_chain = getSqlChain(db)
 
     template = """
