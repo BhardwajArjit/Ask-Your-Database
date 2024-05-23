@@ -13,8 +13,8 @@ Welcome to "Ask Your Database", a simple and interactive chat application design
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/BhardwajArjit/Text-to-SQL-Translator.git
-    cd Text-to-SQL-Translator
+    git clone https://github.com/BhardwajArjit/Ask-Your-Database.git
+    cd Ask-Your-Database
     ```
 
 2. Install the required Python packages:
