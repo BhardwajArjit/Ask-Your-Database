@@ -40,9 +40,9 @@ def getSqlChain(db):
     Returns:
         RunnablePassthrough: A chain of operations that generate the SQL query.
     """
-    template = """
-    You are a data analyst at a company. You are interacting with a user who is asking you questions about the company's database.
-    Based on the table schema below, write a SQL query that would answer the user's question. Take the conversation history into account.
+    template = """You are a data analyst at a company. You are interacting with a user who is asking you questions 
+    about the company's database. Based on the table schema below, write a SQL query that would answer the user's 
+    question. Take the conversation history into account.
 
     <SCHEMA>{schema}</SCHEMA>
 
@@ -102,10 +102,9 @@ def getResponse(userQuery: str, db: SQLDatabase, chatHistory: list):
     """
     sql_chain = getSqlChain(db)
 
-    template = """
-    You are a data analyst at a company. You are interacting with a user who is asking you questions about the company's database.
-    Based on the table schema below, question, sql query, and sql response, write a natural language response.
-    <SCHEMA>{schema}</SCHEMA>
+    template = """You are a data analyst at a company. You are interacting with a user who is asking you questions 
+    about the company's database. Based on the table schema below, question, sql query, and sql response, 
+    write a natural language response. <SCHEMA>{schema}</SCHEMA>
 
     Conversation History: {chat_history}
     SQL Query: <SQL>{query}</SQL>
@@ -121,7 +120,7 @@ def getResponse(userQuery: str, db: SQLDatabase, chatHistory: list):
     chain = (
             RunnablePassthrough.assign(query=sql_chain).assign(
                 schema=lambda _: db.get_table_info(),
-                response=lambda vars: db.run(vars["query"]),
+                response=lambda variables: db.run(variables["query"]),
             )
             | prompt
             | llm
