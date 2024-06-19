@@ -29,7 +29,9 @@ def initPostgresDatabase(user: str, password: str, host: str, port: str, databas
     """
     encoded_password = quote_plus(password)
     db_uri = f"postgresql+psycopg2://{user}:{encoded_password}@{host}:{port}/{database}"
-    return SQLDatabase.from_uri(db_uri)
+    engine = create_engine(db_uri)
+    sql_database = SQLDatabase.from_uri(db_uri)
+    return sql_database, engine
 
 
 def initMysqlDatabase(user: str, password: str, host: str, port: str, database: str):
