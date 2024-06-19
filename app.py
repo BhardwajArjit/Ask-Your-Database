@@ -44,12 +44,13 @@ def initMysqlDatabase(user: str, password: str, host: str, port: str, database: 
         database (str): The name of the database.
 
     Returns:
-        Engine: The SQLAlchemy engine object representing the connection.
+        tuple: A tuple containing the SQLDatabase object and the SQLAlchemy engine.
     """
     encoded_password = quote_plus(password)
     db_uri = f"mysql+mysqlconnector://{user}:{encoded_password}@{host}:{port}/{database}"
     engine = create_engine(db_uri)
-    return engine
+    sql_database = SQLDatabase.from_uri(db_uri)
+    return sql_database, engine
 
 
 def getSqlChain(db):
@@ -178,15 +179,19 @@ with st.sidebar:
 
     if st.button("Connect"):
         with st.spinner("Connecting to database..."):
-            db = initMysqlDatabase(
-                st.session_state["User"],
-                st.session_state["Password"],
-                st.session_state["Host"],
-                st.session_state["Port"],
-                st.session_state["Database"]
-            )
-            st.session_state.db = db
-            st.success("Connected to database!")
+            try:
+                sql_db, engine = initMysqlDatabase(
+                    st.session_state["User"],
+                    st.session_state["Password"],
+                    st.session_state["Host"],
+                    st.session_state["Port"],
+                    st.session_state["Database"]
+                )
+                st.session_state.db = sql_db
+                st.session_state.engine = engine
+                st.success("Connected to database!")
+            except Exception as e:
+                st.error(f"Failed to connect to the database: {e}")
 
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
