@@ -32,7 +32,7 @@ def initPostgresDatabase(user: str, password: str, host: str, port: str, databas
     return SQLDatabase.from_uri(db_uri)
 
 
-def initMysqlDatabase(user: str, password: str, host: str, port: str, database: str) -> SQLDatabase:
+def initMysqlDatabase(user: str, password: str, host: str, port: str, database: str):
     """
     Initialize the connection to the MySQL database.
 
@@ -44,11 +44,12 @@ def initMysqlDatabase(user: str, password: str, host: str, port: str, database: 
         database (str): The name of the database.
 
     Returns:
-        SQLDatabase: The SQLDatabase object representing the connection.
+        Engine: The SQLAlchemy engine object representing the connection.
     """
     encoded_password = quote_plus(password)
     db_uri = f"mysql+mysqlconnector://{user}:{encoded_password}@{host}:{port}/{database}"
-    return SQLDatabase.from_uri(db_uri)
+    engine = create_engine(db_uri)
+    return engine
 
 
 def getSqlChain(db):
