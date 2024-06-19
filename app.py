@@ -9,9 +9,30 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import streamlit as st
 import os
 from urllib.parse import quote_plus
+from sqlalchemy.engine import create_engine
+from urllib.parse import quote_plus
 
 
-def initDatabase(user: str, password: str, host: str, port: str, database: str) -> SQLDatabase:
+def initPostgresDatabase(user: str, password: str, host: str, port: str, database: str):
+    """
+    Initialize the connection to the PostgreSQL database.
+
+    Args:
+        user (str): The database user.
+        password (str): The database user's password.
+        host (str): The database host.
+        port (str): The database port.
+        database (str): The name of the database.
+
+    Returns:
+        SQLDatabase: The SQLDatabase object representing the connection.
+    """
+    encoded_password = quote_plus(password)
+    db_uri = f"postgresql+psycopg2://{user}:{encoded_password}@{host}:{port}/{database}"
+    return SQLDatabase.from_uri(db_uri)
+
+
+def initMysqlDatabase(user: str, password: str, host: str, port: str, database: str) -> SQLDatabase:
     """
     Initialize the connection to the MySQL database.
 
@@ -156,7 +177,7 @@ with st.sidebar:
 
     if st.button("Connect"):
         with st.spinner("Connecting to database..."):
-            db = initDatabase(
+            db = initMysqlDatabase(
                 st.session_state["User"],
                 st.session_state["Password"],
                 st.session_state["Host"],
