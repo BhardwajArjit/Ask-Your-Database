@@ -1,15 +1,42 @@
-# Ask Your Database
+# Generative AI Project: Interactive Database Querying and Text to SQL Translator
 
-Welcome to "Ask Your Database", a simple and interactive chat application designed to make querying your MySQL database easier through natural language interaction. This application uses the power of AI to translate your questions into SQL queries, execute them on your database, and provide you with easy-to-understand responses.
+Welcome to our Generative AI Project! This project comprises two powerful components designed to simplify database querying and SQL generation through natural language interaction.
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Getting Started](#getting-started)
+4. [Installation](#installation)
+5. [Usage](#usage)
+6. [Contribution](#contribution)
+7. [License](#license)
+
+## Overview
+
+Our project aims to revolutionize the way you interact with your MySQL databases by leveraging the power of AI. It includes two main components:
+
+1. **Ask Your Database**: An interactive chat application that allows you to query your MySQL database using natural language. This component translates your questions into SQL queries, executes them, and returns the results in an easy-to-understand format.
+   
+2. **Text to SQL Translator**: A tool that accepts English prompts and returns the corresponding SQL queries. This component is ideal for users who need to generate SQL queries without writing them manually.
 
 ## Features
 
-- **Natural Language Interaction**: Simply ask questions about your database in plain English.
-- **Automated SQL Query Generation**: The application automatically converts your questions into SQL queries.
-- **Seamless Database Connection**: Connect to your MySQL database with ease.
-- **Conversation History**: Keeps track of your interaction history for a more personalized experience.
+- **Natural Language Processing**: Convert plain English questions into SQL queries.
+- **Interactive Chat Interface**: Easy-to-use chat interface for querying databases.
+- **Real-time Query Execution**: Execute queries on your MySQL database and get instant results.
+- **SQL Generation**: Generate SQL queries from English prompts.
 
-## Installation
+## Getting Started
+
+Follow these instructions to set up and run the project on your local machine.
+
+### Prerequisites
+
+- Python 3.x
+- MySQL Server
+- Required Python packages (listed in `requirements.txt`)
+
+### Installation
 
 1. Clone the repository:
     ```bash
@@ -29,7 +56,7 @@ Welcome to "Ask Your Database", a simple and interactive chat application design
 
 4. Run the application:
     ```bash
-    streamlit run app.py
+    streamlit run Homepage.py
     ```
 
 ## Usage
@@ -38,24 +65,9 @@ Welcome to "Ask Your Database", a simple and interactive chat application design
 2. **Connect to Your Database**: Use the sidebar to enter your MySQL database connection details and click "Connect".
 3. **Ask Questions**: Type your questions in the chat input at the bottom of the page.
 
-## Example
-
-1. **Connecting to the Database**:
-    - Host: `localhost`
-    - Port: `3306`
-    - User: `root`
-    - Password: `your_password`
-    - Database: `your_database_name`
-
-2. **Asking Questions**:
-    - "List the first 10 entries."
-    - "Who has got the highest marks?"
-
-The AI will convert these questions into SQL queries, execute them, and provide the results in a human-readable format.
-
 ## Code Structure
 
-- `app.py`: The main application file.
+- `Homepage.py`: The main application file.
 - `requirements.txt`: Lists the required Python packages.
 - `.env`: Environment variables for sensitive information like API keys.
 
