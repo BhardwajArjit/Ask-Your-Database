@@ -177,17 +177,6 @@ with st.sidebar:
     st.subheader("Settings")
     st.write("This is a simple chat application using MySQL or PostgreSQL. Connect to the database and start chatting.")
 
-    # Custom CSS to align radio buttons side by side
-    st.markdown("""
-        <style>
-        div[data-testid="stHorizontalBlock"] {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
     # Single radio button component to choose database type
     database = st.radio("Choose the database", ['MySQL', 'PostgreSQL'], key='database_choice', horizontal=True)
 
