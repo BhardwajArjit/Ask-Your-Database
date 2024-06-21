@@ -18,7 +18,7 @@ def getGeminiResponse(question):
 
 
 # Streamlit app configuration
-st.set_page_config(page_title="Text to SQL Translator")
+st.set_page_config(page_title="Text to SQL Translator", page_icon=":robot_face:")
 st.header("Text to SQL Translator")
 
 # Input field for user question
