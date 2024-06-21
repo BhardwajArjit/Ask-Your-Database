@@ -13,9 +13,9 @@ Welcome to our Generative AI Project! This project comprises two powerful compon
 
 ## Overview
 
-Our project aims to revolutionize the way you interact with your MySQL databases by leveraging the power of AI. It includes two main components:
+Our project aims to revolutionize the way you interact with your MySQL or PostgreSQL databases by leveraging the power of AI. It includes two main components:
 
-1. **Ask Your Database**: An interactive chat application that allows you to query your MySQL database using natural language. This component translates your questions into SQL queries, executes them, and returns the results in an easy-to-understand format.
+1. **Ask Your Database**: An interactive chat application that allows you to query your MySQL or PostgreSQL database using natural language. This component translates your questions into SQL queries, executes them, and returns the results in an easy-to-understand format.
    
 2. **Text to SQL Translator**: A tool that accepts English prompts and returns the corresponding SQL queries. This component is ideal for users who need to generate SQL queries without writing them manually.
 
@@ -23,7 +23,7 @@ Our project aims to revolutionize the way you interact with your MySQL databases
 
 - **Natural Language Processing**: Convert plain English questions into SQL queries.
 - **Interactive Chat Interface**: Easy-to-use chat interface for querying databases.
-- **Real-time Query Execution**: Execute queries on your MySQL database and get instant results.
+- **Real-time Query Execution**: Execute queries on your MySQL or PostgreSQL database and get instant results.
 - **SQL Generation**: Generate SQL queries from English prompts.
 
 ## Getting Started
@@ -34,6 +34,7 @@ Follow these instructions to set up and run the project on your local machine.
 
 - Python 3.x
 - MySQL Server
+- PostgreSQL Server
 - Required Python packages (listed in `requirements.txt`)
 
 ### Installation
@@ -62,7 +63,7 @@ Follow these instructions to set up and run the project on your local machine.
 ## Usage
 
 1. **Launch the Application**: Open your browser and navigate to the Streamlit app (usually `http://localhost:8501`).
-2. **Connect to Your Database**: Use the sidebar to enter your MySQL database connection details and click "Connect".
+2. **Connect to Your Database**: Use the sidebar to enter your MySQL or PostgreSQL database connection details and click "Connect".
 3. **Ask Questions**: Type your questions in the chat input at the bottom of the page.
 
 ## Code Structure
