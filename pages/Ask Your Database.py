@@ -1,4 +1,8 @@
+import streamlit as st
 from dotenv import load_dotenv
+import os
+from sqlalchemy.engine import create_engine
+from urllib.parse import quote_plus
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -6,11 +10,6 @@ from langchain_community.utilities import SQLDatabase
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-import streamlit as st
-import os
-from urllib.parse import quote_plus
-from sqlalchemy.engine import create_engine
-from urllib.parse import quote_plus
 
 
 def initPostgresDatabase(user: str, password: str, host: str, port: str, database: str):
@@ -158,43 +157,74 @@ def getResponse(userQuery: str, db: SQLDatabase, chatHistory: list):
     })
 
 
+# Check if chat history is initialized in session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
         AIMessage(content="Hello! I'm a SQL assistant. Ask me anything about your database."),
     ]
 
+# Load environment variables from .env file
 load_dotenv()
 
+# Configure Streamlit page settings
 st.set_page_config(page_title="Ask Your Database", page_icon=":robot_face:")
 
+# Display title for the app
 st.title("Ask Your Database")
 
+# Sidebar settings for database connection
 with st.sidebar:
     st.subheader("Settings")
-    st.write("This is a simple chat application using MySQL. Connect to the database and start chatting.")
+    st.write("This is a simple chat application using MySQL or PostgreSQL. Connect to the database and start chatting.")
 
+    # Custom CSS to align radio buttons side by side
+    st.markdown("""
+        <style>
+        div[data-testid="stHorizontalBlock"] {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Single radio button component to choose database type
+    database = st.radio("Choose the database", ['MySQL', 'PostgreSQL'], key='database_choice', horizontal=True)
+
+    # Text inputs for database connection details
     st.text_input("Host", value="localhost", key="Host")
     st.text_input("Port", value="3306", key="Port")
     st.text_input("User", value="root", key="User")
     st.text_input("Password", type="password", value="", key="Password")
     st.text_input("Database", value="", key="Database")
 
+    # Button to connect to the selected database
     if st.button("Connect"):
         with st.spinner("Connecting to database..."):
             try:
-                sql_db, engine = initMysqlDatabase(
-                    st.session_state["User"],
-                    st.session_state["Password"],
-                    st.session_state["Host"],
-                    st.session_state["Port"],
-                    st.session_state["Database"]
-                )
+                if database == 'MySQL':
+                    sql_db, engine = initMysqlDatabase(
+                        st.session_state["User"],
+                        st.session_state["Password"],
+                        st.session_state["Host"],
+                        st.session_state["Port"],
+                        st.session_state["Database"]
+                    )
+                elif database == 'PostgreSQL':
+                    sql_db, engine = initPostgresDatabase(
+                        st.session_state["User"],
+                        st.session_state["Password"],
+                        st.session_state["Host"],
+                        st.session_state["Port"],
+                        st.session_state["Database"]
+                    )
                 st.session_state.db = sql_db
                 st.session_state.engine = engine
                 st.success("Connected to database!")
             except Exception as e:
                 st.error(f"Failed to connect to the database: {e}")
 
+# Display chat history
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
         with st.chat_message("AI"):
@@ -203,6 +233,7 @@ for message in st.session_state.chat_history:
         with st.chat_message("Human"):
             st.markdown(message.content)
 
+# Input field for user query
 user_query = st.chat_input("Type a message...")
 if user_query is not None and user_query.strip() != "":
     st.session_state.chat_history.append(HumanMessage(content=user_query))
@@ -210,6 +241,7 @@ if user_query is not None and user_query.strip() != "":
     with st.chat_message("Human"):
         st.markdown(user_query)
 
+    # Generate response based on user query and display AI message
     with st.chat_message("AI"):
         response = getResponse(user_query, st.session_state.db, st.session_state.chat_history)
         st.markdown(response)

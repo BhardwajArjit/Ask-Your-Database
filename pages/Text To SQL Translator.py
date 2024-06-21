@@ -22,7 +22,7 @@ st.set_page_config(page_title="Text to SQL Translator")
 st.header("Text to SQL Translator")
 
 # Input field for user question
-question = st.text_input("Input: ", key="input")
+question = st.text_input("Describe your textual SQL query: ", key="input")
 
 # Button to submit the question
 submit = st.button("Get the SQL Query")
