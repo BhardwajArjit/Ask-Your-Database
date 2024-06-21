@@ -11,25 +11,27 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 # Function to get response from Generative AI model
-def getGeminiResponse(question):
+def getGeminiResponse(prompt):
     model = genai.GenerativeModel('gemini-pro')
-    response = model.generate_content([question])
-    return response.text.strip()
+    query = model.generate_content([prompt])
+    # Remove backticks and the "sql" keyword from the response text
+    sql_query = query.text.strip().replace('`', '').replace('sql', '')
+    return sql_query
 
 
 # Streamlit app configuration
 st.set_page_config(page_title="Text to SQL Translator", page_icon=":robot_face:")
 st.header("Text to SQL Translator")
 
-# Input field for user question
-question = st.text_input("Describe your textual SQL query: ", key="input")
+# Input field for user prompt
+prompt = st.text_input("Describe your textual SQL query: ", key="input")
 
-# Button to submit the question
+# Button to submit the prompt
 submit = st.button("Get the SQL Query")
 
 # If submit is clicked
-if submit and question:
+if submit and prompt:
     # Get the SQL query response from Generative AI model
-    response = getGeminiResponse(question)
+    query = getGeminiResponse(prompt)
     st.subheader("Generated SQL Query")
-    st.code(response, language='sql')
+    st.code(query, language='sql')
