@@ -1,6 +1,6 @@
-# Generative AI Project: Interactive Database Querying and Text to SQL Translator
+# Ask Your Database: Interactive Database Querying and Text to SQL Translator
 
-Welcome to our Generative AI Project! This project comprises two powerful components designed to simplify database querying and SQL generation through natural language interaction.
+Welcome to Ask Your Database! This project comprises two powerful components designed to simplify database querying and SQL generation through natural language interaction.
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -15,7 +15,7 @@ Welcome to our Generative AI Project! This project comprises two powerful compon
 
 Our project aims to revolutionize the way you interact with your MySQL or PostgreSQL databases by leveraging the power of AI. It includes two main components:
 
-1. **Ask Your Database**: An interactive chat application that allows you to query your MySQL or PostgreSQL database using natural language. This component translates your questions into SQL queries, executes them, and returns the results in an easy-to-understand format.
+1. **Chat with Database**: An interactive chat application that allows you to query your localhost MySQL or PostgreSQL database using natural language. This component translates your questions into SQL queries, executes them, and returns the results in an easy-to-understand format.
    
 2. **Text to SQL Translator**: A tool that accepts English prompts and returns the corresponding SQL queries. This component is ideal for users who need to generate SQL queries without writing them manually.
 
