@@ -167,15 +167,15 @@ if "chat_history" not in st.session_state:
 load_dotenv()
 
 # Configure Streamlit page settings
-st.set_page_config(page_title="Ask Your Database", page_icon=":robot_face:")
+st.set_page_config(page_title="Chat with Database", page_icon=":robot_face:")
 
 # Display title for the app
-st.title("Ask Your Database")
+st.title("Chat with Database")
 
 # Sidebar settings for database connection
 with st.sidebar:
     st.subheader("Settings")
-    st.write("This is a simple chat application using MySQL or PostgreSQL. Connect to the database and start chatting.")
+    st.write("This is a simple chat application using MySQL or PostgreSQL (localhost). Connect to the database and start chatting.")
 
     # Single radio button component to choose database type
     database = st.radio("Choose the database", ['MySQL', 'PostgreSQL'], key='database_choice', horizontal=True)
